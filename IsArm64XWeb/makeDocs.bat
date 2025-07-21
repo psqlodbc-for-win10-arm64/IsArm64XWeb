@@ -1,0 +1,1 @@
+dotnet publish -o ..\IsArm64XWeb.publish -c:Release -p:GHPages=true -p:GHPagesBase=/IsArm64XWeb/ && robocopy /e ..\IsArm64XWeb.publish\wwwroot ..\docs

@@ -1,0 +1,3 @@
+[submodule "Toolings"]
+	path = Toolings
+	url = https://github.com/psqlodbc-for-win10-arm64/Toolings

@@ -1,0 +1,89 @@
+﻿@page "/"
+@using LibAmong3.Helpers.Guessr
+
+<PageTitle>IsArm64XWeb</PageTitle>
+
+<p>Please select one or more <code>EXE</code>, <code>DLL</code>, <code>OBJ</code> files to guess binary type. The files are processed inside this WebAssembly:</p>
+
+<details class="mb-3">
+    <summary>Possible types</summary>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Output</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _descriptions)
+            {
+                <tr>
+                    <td><code>@item.Key</code></td>
+                    <td>@item.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</details>
+
+<p><InputFile OnChange="LoadFiles" multiple /></p>
+
+<pre>@_pre</pre>
+
+@code
+{
+    private string _pre = "Result here";
+    private Dictionary<Arm64XBinaryForm, string> _descriptions = new()
+    {
+        { Arm64XBinaryForm.X64, "x64 Portable Executable" },
+        { Arm64XBinaryForm.Arm64, "Arm64 Portable Executable" },
+        { Arm64XBinaryForm.Arm64EC, "Arm64EC Portable Executable" },
+        { Arm64XBinaryForm.Arm64X, "Arm64X Portable Executable" },
+        { Arm64XBinaryForm.X86, "X86 Portable Executable" },
+        { Arm64XBinaryForm.Arm64Coff, "Arm64 obj file" },
+        { Arm64XBinaryForm.Arm64ECCoff, "Arm64EC obj file" },
+        { Arm64XBinaryForm.X64Coff, "x64 obj file" },
+        { Arm64XBinaryForm.X86Coff, "x86 obj file" },
+        { Arm64XBinaryForm.Arm64XCoffUponX86Coff, "pseudo-ARM64X COFF file" },
+        { Arm64XBinaryForm.Arm32, "Arm32 Portable Executable" },
+        { Arm64XBinaryForm.Arm32Coff, "Arm32Coff obj file" },
+        { Arm64XBinaryForm.AnonymousCoff, "Anonymous obj file" },
+    };
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        var writer = new StringWriter();
+
+        try
+        {
+            foreach (var file in e.GetMultipleFiles(1000))
+            {
+                writer.WriteLine($"File: {file.Name}");
+                try
+                {
+                    using var fileStream = file.OpenReadStream(1024 * 1024 * 500);
+                    using var binary = new MemoryStream();
+                    await fileStream.CopyToAsync(binary);
+                    binary.Position = 0;
+                    var guess = new LibAmong3.Helpers.Guessr.GuessArm64XBinaryHelper().Guess(
+                        binary.GetBuffer().AsMemory(0, Convert.ToInt32(binary.Length))
+                    );
+                    writer.WriteLine($"Type: {guess}");
+                    writer.WriteLine();
+                }
+                catch (Exception ex)
+                {
+                    writer.WriteLine($"Error processing file {file.Name}: {ex}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            writer.WriteLine($"Error reading files: {ex}");
+        }
+
+        _pre = writer.ToString();
+    }
+
+}
