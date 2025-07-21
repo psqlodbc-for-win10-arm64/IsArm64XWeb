@@ -1,3 +1,7 @@
 [submodule "Toolings"]
 	path = Toolings
 	url = https://github.com/psqlodbc-for-win10-arm64/Toolings
+[submodule "docs"]
+	path = docs
+	url = https://github.com/psqlodbc-for-win10-arm64/IsArm64XWeb.git
+	branch = gh-pages
