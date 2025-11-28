@@ -1,0 +1,77 @@
+﻿@inject GenerateDefUsecase _generateDefUsecase
+@page "/exportdef"
+@using IsArm64XWeb.Usecases
+@using LibAmong3.Helpers.Guessr
+
+<PageTitle>Export .def</PageTitle>
+
+<p>Please select one of <code>EXE</code> or <code>DLL</code> file. It will generate a def file content:</p>
+
+<p><InputFile OnChange="LoadFile" /></p>
+
+<div class="form-check">
+    <input type="checkbox" id="appendOrdinal" value="@_appendOrdinal" class="form-check-input" 
+        @onchange="async e => { _appendOrdinal = (bool)(e.Value ?? false); await GenerateAsync(); }" 
+    />
+    <label for="appendOrdinal" class="form-check-label">Append Ordinal</label>
+</div>
+<div class="form-check">
+    <input type="checkbox" id="includeHidden" value="@_includeHidden" class="form-check-input" 
+        @onchange="async e => { _includeHidden = (bool)(e.Value ?? false); await GenerateAsync(); }" 
+    /> 
+    <label for="includeHidden" class="form-check-label">Include Hidden</label>
+</div>
+<div class="form-check">
+    <input type="checkbox" id="noForwarders" value="@_noForwarders" class="form-check-input" 
+        @onchange="async e => { _noForwarders = (bool)(e.Value ?? false); await GenerateAsync(); }" 
+    />
+    <label for="noForwarders" class="form-check-label">No Forwarders</label>
+</div>
+
+<label for="def">A .def file content:</label>
+<textarea id="def" class="form-control font-monospace" rows="17">@_def</textarea>
+
+@code
+{
+    private string _def = "(Result here)";
+    private bool _appendOrdinal;
+    private bool _includeHidden;
+    private bool _noForwarders;
+    private IBrowserFile? _file;
+
+    private async Task GenerateAsync()
+    {
+        if (_file == null)
+        {
+            return;
+        }
+
+        var writer = new StringWriter();
+
+        try
+        {
+            await _generateDefUsecase.GenerateAsync(
+                writer,
+                _file,
+                _appendOrdinal,
+                _includeHidden,
+                _noForwarders
+            );
+        }
+        catch (Exception ex)
+        {
+            writer.WriteLine($"Error reading files: {ex}");
+        }
+
+        _def = writer.ToString();
+        StateHasChanged();
+    }
+
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        _file = e.File;
+
+        await GenerateAsync();
+    }
+
+}
