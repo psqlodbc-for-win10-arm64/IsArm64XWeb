@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using IsArm64XWeb.Shared
 @using LibAmong3.Helpers.Guessr
 
 <PageTitle>IsArm64XWeb</PageTitle>
@@ -27,12 +28,33 @@
     </table>
 </details>
 
+<p>
+    <div title="Disable detection of Arm64X binaries.">
+        <LiteInputCheck Checked="@_disableArm64XDetection"
+                        CheckedChanged="(async (value) => { _disableArm64XDetection = value; await TryToReloadAsync(); })">DisableArm64XDetection</LiteInputCheck>
+    </div>
+
+    <div title="Look at CHPE metadata version to help determine the binary form.">
+        <LiteInputCheck Checked="@_lookAtCHPEMetadataVersion"
+                        CheckedChanged="(async (value) => { _lookAtCHPEMetadataVersion = value; await TryToReloadAsync(); })">LookAtCHPEMetadataVersion</LiteInputCheck>
+    </div>
+
+    <div title="Look at DVRT header to help determine the binary form.">
+        <LiteInputCheck Checked="@_lookAtDvrtHeader"
+                        CheckedChanged="(async (value) => { _lookAtDvrtHeader = value; await TryToReloadAsync(); })">LookAtDvrtHeader</LiteInputCheck>
+    </div>
+</p>
+
 <p><InputFile OnChange="LoadFiles" multiple /></p>
 
 <pre>@_pre</pre>
 
 @code
 {
+    private bool _disableArm64XDetection = false;
+    private bool _lookAtCHPEMetadataVersion = true;
+    private bool _lookAtDvrtHeader = true;
+    private IReadOnlyList<IBrowserFile> _providedFiles = Array.Empty<IBrowserFile>();
     private string _pre = "Result here";
     private Dictionary<Arm64XBinaryForm, string> _descriptions = new()
     {
@@ -52,13 +74,18 @@
         { Arm64XBinaryForm.AnonymousCoff, "Anonymous obj file" },
     };
 
-    private async Task LoadFiles(InputFileChangeEventArgs e)
+    private async Task TryToReloadAsync()
     {
+        if (!_providedFiles.Any())
+        {
+            return;
+        }
+
         var writer = new StringWriter();
 
         try
         {
-            foreach (var file in e.GetMultipleFiles(1000))
+            foreach (var file in _providedFiles)
             {
                 writer.WriteLine($"File: {file.Name}");
                 try
@@ -68,7 +95,13 @@
                     await fileStream.CopyToAsync(binary);
                     binary.Position = 0;
                     var guess = new LibAmong3.Helpers.Guessr.GuessArm64XBinaryHelper().Guess(
-                        binary.GetBuffer().AsMemory(0, Convert.ToInt32(binary.Length))
+                        binary.GetBuffer().AsMemory(0, Convert.ToInt32(binary.Length)),
+                        new Guess1Options
+                        {
+                            DisableArm64XDetection = _disableArm64XDetection,
+                            LookAtCHPEMetadataVersion = _lookAtCHPEMetadataVersion,
+                            LookAtDvrtHeader = _lookAtDvrtHeader,
+                        }
                     );
                     writer.WriteLine($"Type: {guess}");
                     writer.WriteLine();
@@ -85,6 +118,13 @@
         }
 
         _pre = writer.ToString();
+    }
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        _providedFiles = e.GetMultipleFiles(1000);
+
+        await TryToReloadAsync();
     }
 
 }
