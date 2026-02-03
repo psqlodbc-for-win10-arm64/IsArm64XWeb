@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "IsArm64XWeb",
   "resources": {
-    "hash": "sha256-uXuSj0cKjWq86ySOH5yP2y5iP7xhOhvkeA0Dhp7F+V4=",
+    "hash": "sha256-N2a9s+DFY7LmKDaexd8pcl7I9KNTLRzA8QVLZpWI80g=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-D0bzod5lwwSzPR43JC8TTCcZKw+3jIHOk8CZFCRj5is="
     },
@@ -19,7 +19,7 @@
     "coreAssembly": {},
     "assembly": {
       "CoffReader.wasm": "sha256-iEqk2WUcvTmLP2dLnwtVpYOwpC/tVa8YIuLWJaV24Ys=",
-      "IsArm64XWeb.wasm": "sha256-0lyhn8ABs64I291pbiqEVUad+2Q9K8VYr5sN4nQMypY=",
+      "IsArm64XWeb.wasm": "sha256-/Ha7HTZ0IiAln90gIlpQPSreukhpD3Y3lOBZWAU/3/k=",
       "LibAmong3.wasm": "sha256-30CsqLiTmLmhX1KoujYVmx2gv60E5QBEg4+6WJczHBk=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-c6tkuNJwguv50w0jDn73fuhOst+KCN/jC3BeHMu5L28=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-9MOlYAsl93zZ9RaEljYLeBFXVEOf/L+wwbldlhlA8fw=",
