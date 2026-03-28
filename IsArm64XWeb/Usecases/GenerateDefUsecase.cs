@@ -1,5 +1,7 @@
 using LibAmong3.Helpers.PE32;
+using LibAmong3.Helpers.PE32.Deeper;
 using Microsoft.AspNetCore.Components.Forms;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace IsArm64XWeb.Usecases
@@ -11,14 +13,20 @@ namespace IsArm64XWeb.Usecases
             IBrowserFile file,
             bool appendOrdinal,
             bool includeHidden,
-            bool noForwarders
+            bool noForwarders,
+            bool applyDvrt
         )
         {
             using var inputFile = file.OpenReadStream(1024 * 1024 * 10);
             using var dllBinary = new MemoryStream();
             await inputFile.CopyToAsync(dllBinary);
             writer.WriteLine($"LIBRARY {Path.GetFileNameWithoutExtension(file.Name)}");
-            var loaded = LoadDirectory(dllBinary.ToArray());
+            var dllBytes = dllBinary.ToArray();
+            if (applyDvrt)
+            {
+                new ApplyDvrtHelper().ApplyDvrt(dllBytes);
+            }
+            var loaded = LoadDirectory(dllBytes);
             if (loaded != null)
             {
                 writer.WriteLine("EXPORTS");
@@ -95,6 +103,7 @@ namespace IsArm64XWeb.Usecases
         private static LoadedDirectory? LoadDirectory(byte[] dll)
         {
             var header = new ParseHeader().Parse(dll);
+
             var exportTable = header.GetImageDirectoryOrEmpty(0);
             if (exportTable == PEImageDataDirectory.Empty)
             {
@@ -129,6 +138,5 @@ namespace IsArm64XWeb.Usecases
             }
             return new LoadedDirectory(directory, GetForwarderFromRVA);
         }
-
     }
 }

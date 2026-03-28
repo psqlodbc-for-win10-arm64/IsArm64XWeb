@@ -27,6 +27,12 @@
     />
     <label for="noForwarders" class="form-check-label">No Forwarders</label>
 </div>
+<div class="form-check">
+    <input type="checkbox" id="applyDvrt" value="@_applyDvrt" class="form-check-input" 
+        @onchange="async e => { _applyDvrt = (bool)(e.Value ?? false); await GenerateAsync(); }" 
+    />
+    <label for="applyDvrt" class="form-check-label">Apply DVRT (Dynamic value relocation table); if you are trying Arm64X binary, turn off will expose Arm64 export table, turn on will expose Arm64EC export table.</label>
+</div>
 
 <label for="def">A .def file content:</label>
 <textarea id="def" class="form-control font-monospace" rows="17">@_def</textarea>
@@ -37,6 +43,7 @@
     private bool _appendOrdinal;
     private bool _includeHidden;
     private bool _noForwarders;
+    private bool _applyDvrt;
     private IBrowserFile? _file;
 
     private async Task GenerateAsync()
@@ -55,7 +62,8 @@
                 _file,
                 _appendOrdinal,
                 _includeHidden,
-                _noForwarders
+                _noForwarders,
+                _applyDvrt
             );
         }
         catch (Exception ex)
